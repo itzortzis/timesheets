@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+</head>
+<body>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CSV Input Form</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f3f4f6;
+        padding: 40px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .container {
+        background: white;
+        padding: 30px 40px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        width: 400px;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: bold;
+        color: #444;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+    }
+
+    input[type="range"] {
+        width: 100%;
+        appearance: none;
+        height: 6px;
+        background: #ddd;
+        border-radius: 5px;
+        outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        background: #4f46e5;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .range-value {
+        margin-top: 5px;
+        font-size: 14px;
+        text-align: right;
+        color: #555;
+    }
+
+    button {
+        width: 100%;
+        background: #4f46e5;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    button:hover {
+        background: #4338ca;
+    }
+</style>
+
+</head>
+<body>
+
+<div class="container">
+    <h2>Generate CSV</h2>
+
+    <form id="csvForm">
+        <div class="form-group">
+            <label>Text Input</label>
+            <input type="text" name="text" placeholder="Enter text..." required>
+        </div>
+
+        <div class="form-group">
+            <label>Slider 1 (1–30)</label>
+            <input type="range" id="slider1" name="number1" min="1" max="30" value="15">
+            <div class="range-value">Value: <span id="value1">15</span></div>
+        </div>
+
+        <div class="form-group">
+            <label>Slider 2 (1–30)</label>
+            <input type="range" id="slider2" name="number2" min="1" max="30" value="10">
+            <div class="range-value">Value: <span id="value2">10</span></div>
+        </div>
+
+        <button type="submit">Submit</button>
+    </form>
+</div>
+
+
+<script>
+// Update displayed values live
+const slider1 = document.getElementById("slider1");
+const slider2 = document.getElementById("slider2");
+const value1 = document.getElementById("value1");
+const value2 = document.getElementById("value2");
+
+slider1.oninput = () => value1.textContent = slider1.value;
+slider2.oninput = () => value2.textContent = slider2.value;
+
+// Submit handler
+document.getElementById("csvForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const text = e.target.text.value;
+    const number1 = slider1.value;
+    const number2 = slider2.value;
+
+    const response = await fetch("/generate", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ text, number1, number2 })
+    });
+
+    const result = await response.json();
+    alert("CSV generated: " + result.file);
+});
+</script>
+
+</body>
+</html>
+
+
+
+</body>
+</html>
