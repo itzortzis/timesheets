@@ -1,4 +1,5 @@
 import csv
+import uuid
 
 class timesheets():
   def __init__(self, 
@@ -20,12 +21,16 @@ class timesheets():
       self.wps_weights = wps_weights
       self.month = month
       self.year = year
+      
+      self.filepath = ""
+      self.error = ""
 
       self.prepare_timetable()
-      self.calculate_hours_per_day()
-      self.calculate_hours_per_wps()
-      self.add_wps_to_timetable()
-      self.create_csv()
+      self.r = self.calculate_hours_per_day()
+      if self.r == 0:
+        self.calculate_hours_per_wps()
+        self.add_wps_to_timetable()
+        self.create_csv()
       
 
   def available_slots(self):
@@ -46,17 +51,34 @@ class timesheets():
         i = 0
 
     if residual > 0:
-      raise ValueError(f"The given hours do not fit in the given days. {residual} hours exeed the limit")
+      self.error = f"The given hours do not fit in the given days. {residual} hours exeed the limit"
+      return 1
+      # raise ValueError(f"The given hours do not fit in the given days. {residual} hours exeed the limit")
+    
+    return 0
 
 
   def calculate_hours_per_day(self):
     if self.period_start > self.period_end:
       raise ValueError(f"Expected period_end > period_start. \
                                               Got period_start > period_end")
-    days = self.period_end - self.period_start - len(self.exception)
+      
+    count = 0
+    for i in range(len(self.exception)):
+      if (self.exception[i] >= self.period_start and self.exception[i] <= self.period_end-1):
+        count += 1
+    
+    days = self.period_end - self.period_start - count
     hours_per_day = self.hours // days
     
     residual = self.hours % days
+    
+    if hours_per_day > 8:
+      res = days * (hours_per_day - 8)
+      self.error = f"The given hours do not fit in the given days. {res} hours exceed the limit."
+      return 1
+      # raise ValueError(f"The given hours do not fit in the given days.")
+    
     
     for i in range(len(self.timetable)):
       if self.timetable[i]["active"]:
@@ -65,7 +87,10 @@ class timesheets():
         self.timetable[i]["value"] = 0
 
     if residual > 0:
-      self.spread_residual(residual)
+      r = self.spread_residual(residual)
+      return r
+    
+    return 0
 
 
   def prepare_timetable(self):
@@ -107,7 +132,8 @@ class timesheets():
           self.timesheet[len(self.timesheet)-1]["value"] = 0
 
   def create_csv(self):
-    with open('timesheet.csv', 'w', newline='') as csvfile:
+    filepath = f"timesheet_{uuid.uuid4()}.csv"
+    with open(filepath, 'w', newline='') as csvfile:
       writer = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
       writer.writerow(['day', 'wp', 'hours'])
@@ -126,3 +152,5 @@ class timesheets():
         for j in range(len(self.wps_info)):
           writer.writerow([f'{i}-{self.month}-{self.year}', \
                                 self.wps_info[j]["name"], '0'])
+    
+    self.filepath = filepath

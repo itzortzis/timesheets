@@ -4,16 +4,16 @@ services:
 
   fastapi:
     build: ./api
-    container_name: fastapi
+    container_name: timefastapi
     expose:
       - "8000"
     restart: always
 
   nginx:
     image: nginx:latest
-    container_name: nginx
+    container_name: timenginx
     ports:
-      - "80:80"
+      - "8201:80"
     depends_on:
       - fastapi
     volumes:
